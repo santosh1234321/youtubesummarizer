@@ -6,27 +6,28 @@
     <style>
         body {
             font-family: sans-serif;
-            background-color: #f0f4f9;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background-color: #f4f4f4;
         }
         .container {
             background-color: white;
-            padding: 2rem;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
             width: 90%;
             max-width: 600px;
         }
-        h1 {
+        h2 {
             text-align: center;
-            color: #1a73e8;
-            margin-bottom: 2rem;
+            margin-bottom: 20px;
         }
         .form-group {
             margin-bottom: 1.5rem;
+            text-align: left;
         }
         label {
             display: block;
@@ -36,16 +37,18 @@
         }
         input, textarea, select {
             width: 100%;
-            padding: 0.75rem;
+            padding: 10px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box;
             font-size: 1rem;
         }
         .summary-button {
             width: 100%;
-            padding: 1rem;
-            background-color: #1a73e8;
+            background-color: #4CAF50;
             color: white;
+            padding: 12px 20px;
             border: none;
             border-radius: 4px;
             font-size: 1.1rem;
@@ -53,7 +56,7 @@
             transition: background-color 0.2s;
         }
         .summary-button:hover {
-            background-color: #1558b5;
+            background-color: #45a049;
         }
         #summary-output {
             margin-top: 2rem;
@@ -62,12 +65,13 @@
             border-radius: 4px;
             white-space: pre-wrap;
             word-wrap: break-word;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>YouTube Summarizer</h1>
+        <h2>YouTube Summarizer</h2>
         <form id="summary-form">
             <div class="form-group">
                 <label for="youtube-link">Enter YouTube Link</label>
@@ -94,8 +98,12 @@
             const link = document.getElementById('youtube-link').value;
             const prompt = document.getElementById('additional-prompt').value;
             const outputDiv = document.getElementById('summary-output');
-            
-            outputDiv.innerHTML = 'Summarizing...';
+            const summarizeButton = document.querySelector('.summary-button');
+
+            // Show loading state
+            summarizeButton.innerText = 'Summarizing...';
+            summarizeButton.disabled = true;
+            outputDiv.innerHTML = '';
 
             try {
                 const response = await fetch('/summarize', {
@@ -106,14 +114,22 @@
                     body: JSON.stringify({ youtube_url: link, user_prompt: prompt })
                 });
 
+                // Revert loading state
+                summarizeButton.innerText = 'Summarize';
+                summarizeButton.disabled = false;
+
                 if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
                 outputDiv.innerText = data.summary;
 
             } catch (error) {
+                // Revert loading state on error
+                summarizeButton.innerText = 'Summarize';
+                summarizeButton.disabled = false;
                 outputDiv.innerText = `Error: ${error.message}. Please check the URL and try again.`;
             }
         });
