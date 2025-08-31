@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>YouTube Summarizer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .summary-button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .summary-button:hover {
+            background-color: #1558b5;
+        }
+        #summary-output {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e8f0fe;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Summarizer</h1>
+        <form id="summary-form">
+            <div class="form-group">
+                <label for="youtube-link">Enter YouTube Link</label>
+                <input type="text" id="youtube-link" placeholder="Enter YouTube Link" required>
+            </div>
+            <div class="form-group">
+                <label for="model-select">Select Model</label>
+                <select id="model-select">
+                    <option>Gemini 2.0 Flash</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="additional-prompt">Additional Prompt (Optional)</label>
+                <textarea id="additional-prompt" rows="3" placeholder="e.g., 'explain to me like I am five years old'"></textarea>
+            </div>
+            <button type="submit" class="summary-button">Summarize</button>
+        </form>
+        <div id="summary-output"></div>
+    </div>
+    
+    <script>
+        document.getElementById('summary-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const link = document.getElementById('youtube-link').value;
+            const prompt = document.getElementById('additional-prompt').value;
+            const outputDiv = document.getElementById('summary-output');
+            
+            outputDiv.innerHTML = 'Summarizing...';
+
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ youtube_url: link, user_prompt: prompt })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                outputDiv.innerText = data.summary;
+
+            } catch (error) {
+                outputDiv.innerText = `Error: ${error.message}. Please check the URL and try again.`;
+            }
+        });
+    </script>
+</body>
+</html>
